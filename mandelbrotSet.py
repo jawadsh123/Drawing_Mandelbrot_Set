@@ -12,7 +12,6 @@ def map(number, l_ini, r_ini, l_final, r_final):
 	value = fraction * (r_final - l_final) + l_final
 	return value
 
-
 def plot_Mandelbrot_Set(image, min_x, max_x, min_y, max_y):
 	for i in range(WIDTH):
 		x = map(i, 0, WIDTH, min_x, max_x)

@@ -10,18 +10,62 @@ Z = 0
 sess = tf.InteractiveSession()
 
 
-def Claculate_Colors(a):
+def Calculate_Colors(a):
 	"""Display an array of iteration counts as a
 	colorful picture of a fractal."""
 	a_cyclic = (6.28*a/20.0).reshape(list(a.shape)+[1])
-	img = np.concatenate([155-80*np.cos(a_cyclic),
+	# img = np.concatenate([155-80*np.cos(a_cyclic),
+	# 					30+50*np.sin(a_cyclic),
+	# 					10+20*np.cos(a_cyclic)], 2)
+
+	# print((10+20*np.cos(a_cyclic)).shape)
+	img = np.concatenate([10+20*np.cos(a_cyclic),
 						30+50*np.sin(a_cyclic),
-						10+20*np.cos(a_cyclic)], 2)
+						155-80*np.cos(a_cyclic)], 2)
 	img[a==a.max()] = 0
 	a = img
 	a = np.uint8(np.clip(a, 0, 255))
 
 	return a/255.0
+
+def Calculate_New_Colors(a):
+
+	mapping = [() for _ in range(16)]
+	mapping[0] = (66, 30, 15)
+	mapping[1] = (25, 7, 26)
+	mapping[2] = (9, 1, 47)
+	mapping[3] = (4, 4, 73)
+	mapping[4] = (0, 7, 100)
+	mapping[5] = (12, 44, 138)
+	mapping[6] = (24, 82, 177)
+	mapping[7] = (57, 125, 209)
+	mapping[8] = (134, 181, 229)
+	mapping[9] = (211, 236, 248)
+	mapping[10] = (241, 233, 191)
+	mapping[11] = (248, 201, 95)
+	mapping[12] = (255, 170, 0)
+	mapping[13] = (204, 128, 0)
+	mapping[14] = (153, 87, 0)
+	mapping[15] = (106, 52, 3)
+
+	a_reshaped = a.reshape(list(a.shape)+[1])
+
+	blue_matrix = np.array([[mapping[int(ele)%16][2] for ele in row] for row in a_reshaped])
+	blue_matrix = blue_matrix.reshape(list(blue_matrix.shape)+[1])
+
+	green_matrix = np.array([[mapping[int(ele)%16][1] for ele in row] for row in a_reshaped])
+	green_matrix = green_matrix.reshape(list(green_matrix.shape)+[1])
+
+	red_matrix = np.array([[mapping[int(ele)%16][0] for ele in row] for row in a_reshaped])
+	red_matrix = red_matrix.reshape(list(red_matrix.shape)+[1])
+
+	img = np.concatenate([ blue_matrix,
+							green_matrix,
+							red_matrix], 2)
+	
+	img[a==a.max()] = 0
+
+	return img/255.0
 
 
 
@@ -30,9 +74,12 @@ def Plot_Set(image):
 	global start_x, start_y, end_x, end_y, draw_started, clone
 	clone = image.copy()
 	height, width, channels = image.shape
+	# height, width = image.shape
 	start_x, start_y = 0, 0
 	end_x, end_y = width, height
 	draw_started = False
+
+	# print(image[0].shape)
 
 	def On_Mouse(event, x, y, flags, params):
 		global start_x, start_y, end_x, end_y, draw_started, clone
@@ -98,6 +145,11 @@ def Create_Iteration_Matrix(min_x=-2.5, max_x=1, min_y=-1.3, max_y=1.3):
 	# boolean matrix for checking if it has diverged
 	not_diverged = tf.abs(zs_new) < 4
 
+	# diverged = tf.abs(zs_new) >= 4
+	# flag = tf.abs(zs_new) >= 4
+
+	# escape_z = tf.mul(tf.abs(zs_new), tf.mul(tf.cast(diverged, tf.float32), tf.cast(flag, tf.float32)))
+
 	update_zs = zs.assign(zs_new)
 	update_count = ns.assign_add(tf.cast(not_diverged, tf.float32))
 
@@ -118,7 +170,8 @@ def main():
 	while True:
 		print("Creating Plot")
 		ns = Create_Iteration_Matrix(min_x, max_x, min_y, max_y)
-		a = Claculate_Colors(ns)
+		a = Calculate_Colors(ns)
+		# a = Calculate_New_Colors(ns)
 		returned_packet = Plot_Set(a)
 
 
